@@ -1,20 +1,12 @@
 #Simple way to scrape ticker names for now
 import pandas as pd
 import numpy
-import matplotlib
+import matplotlib.pyplot as plt
 import yfinance as yf
 
-
-def fetch_sp500_tickers():
-    url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
-    table = pd.read_html(url, attrs={'id': 'constituents'})[0]  
-    tickers = table['Symbol'].tolist() 
-    return tickers
-
-
-def fetchStock(ticker_symbol, showData = True):
+def fetchStock(ticker_symbol, showData = False, period_in_years = 1):
     ticker = yf.Ticker(ticker_symbol)
-    historical_data = ticker.history(period="1y")
+    historical_data = ticker.history(period=f"{period_in_years}y")
     financials = ticker.financials
     actions = ticker.actions
     if (showData):
@@ -26,3 +18,13 @@ def fetchStock(ticker_symbol, showData = True):
         print("\nStock Actions:")
         print(actions)
     return ticker, historical_data, financials, actions
+
+def plotPrice(ticker_symbol, period_in_years):
+    ticker, historical_data, financials, actions = fetchStock(ticker_symbol, False, period_in_years)
+    plt.figure(figsize=(10, 6))  
+    plt.plot(historical_data['Close'], label='Close Price')  
+    plt.title(f'Historical Closing Prices of {ticker}') 
+    plt.xlabel('Date')
+    plt.ylabel('Close Price (USD)') 
+    plt.legend()
+    plt.show() 
