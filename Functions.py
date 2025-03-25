@@ -29,7 +29,10 @@ def plotPrice(ticker_symbol, period):
     plt.legend()
     plt.show() 
 
-def calculateSMA(ticker_symbol, sma_period = 50, data_period_days = "200d"):
+def calculate50DaySMA(ticker_symbol, sma_period = 50, data_period_days = "200d"):
     ticker, hdata = fetchStock(ticker_symbol, False, data_period_days)
     return hdata['Close'].rolling(window=sma_period).mean()
 
+def calculate200DaySMA(ticker_symbol, sma_period = 200, data_period_days = "1y"):
+    ticker, hdata = fetchStock(ticker_symbol, False, data_period_days)
+    return hdata['Close'].rolling(window=sma_period).mean()
