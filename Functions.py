@@ -12,10 +12,10 @@ def fetchStock(ticker_symbol, showData = False, period = "1y"):
         print(ticker_symbol)
         print("Historical Data:")
         print(historical_data)
-        print("\nFinancials:")
-        print(financials)
-        print("\nStock Actions:")
-        print(actions)
+    #    print("\nFinancials:")
+    #    print(financials)
+    #    print("\nStock Actions:")
+    #    print(actions)
     return ticker, historical_data
 
 def plotPrice(ticker_symbol, period):
@@ -39,3 +39,11 @@ def calculate200DaySMA(ticker_symbol, sma_period = 200, data_period_days = "1y")
 def calculateEMA(ticker_symbol, period):
     ticker, hdata = fetchStock(ticker_symbol)
     return hdata['Close'].ewm(span=period, adjust=False).mean()
+
+def plotData(data, title, xlabel = "Date", ylabel = "Price USD"):
+    plt.plot(data, label='Close Price', color='blue')
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.show()
