@@ -12,19 +12,17 @@ def fetch_sp500_tickers():
     return tickers
 
 
-def fetch_stock(ticker_symbol):
-    print(ticker_symbol)
-    ticker = ticker_symbol
+def fetchStock(ticker_symbol, showData = True):
     ticker = yf.Ticker(ticker_symbol)
     historical_data = ticker.history(period="1y")
-    print("Historical Data:")
-    print(historical_data)
-    # Fetch basic financials
     financials = ticker.financials
-    print("\nFinancials:")
-    print(financials)
-
-    # Fetch stock actions like dividends and splits
     actions = ticker.actions
-    print("\nStock Actions:")
-    print(actions)
+    if (showData):
+        print(ticker_symbol)
+        print("Historical Data:")
+        print(historical_data)
+        print("\nFinancials:")
+        print(financials)
+        print("\nStock Actions:")
+        print(actions)
+    return ticker, historical_data, financials, actions

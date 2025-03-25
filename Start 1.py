@@ -2,11 +2,11 @@ import pandas as pd
 import numpy
 import matplotlib
 import yfinance as yf
-from Functions import fetch_sp500_tickers, fetch_stock
+from Functions import fetch_sp500_tickers, fetchStock
 
 
 test = fetch_sp500_tickers()
-fetch_stock(test[0])
+fetchStock(test[0], False)
 
 
 
