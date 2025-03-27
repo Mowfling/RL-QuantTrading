@@ -49,6 +49,15 @@ def calculateTrueRange(ticker_symbol, period):
     true_range = np.maximum.reduce([high_low, high_close, low_close])
     return true_range
 
+def calculateAverageTrueRangeSMA(ticker_symbol, data_period, atr_period):
+    true_range = calculateTrueRange(ticker_symbol, data_period)
+    average_true_range = true_range.rolling(window = atr_period).mean()
+    return average_true_range
+
+def calculateAverageTrueRangeEMA(ticker_symbol, data_period, atr_period):
+    true_range = calculateTrueRange(ticker_symbol, data_period)
+    average_true_range = true_range.ewm(span=atr_period, adjust=False).mean()
+    return average_true_range
 
 def plotData(data, title = "Default title", xlabel = "Date", ylabel = "Price USD"):
     plt.plot(data, color='blue')
