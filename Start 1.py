@@ -5,9 +5,9 @@ import yfinance as yf
 from data import listofsp500
 from Functions import *
 
-#plotPrice("AAPL", "4y")
-#print(calculate50DaySMA("AAPL"))
+#plotData(calculate50DaySMA("AAPL"))
 #print(calculate200DaySMA("AAPL")) 
 #plotData(calculateEMA("AAPL", 9), "APPL 9 day EMA")
-plotData(rsi_sectorrotation(), title="Sector rotation")
-#print(calculateStochasticOscillator(fetchData("AAPL")))
+plotData(rsi_sectorrotation("30y"), title="Sector rotation")
+#print(rsi_sectorrotation())
+

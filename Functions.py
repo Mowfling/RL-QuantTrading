@@ -97,11 +97,11 @@ def calculate_rsi(series, period=14):
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
-def rsi_sectorrotation(period= "3mo"):
+def rsi_sectorrotation(sector_period= "3mo", rsi_period = 14):
     rsi_data = {}
     for sector, ticker in sectors.items():
-        data = fetchData(ticker, period)
-        rsi = calculate_rsi(data["Close"])
+        data = fetchData(ticker, sector_period)
+        rsi = calculate_rsi(data["Close"], rsi_period)
         rsi_data[sector] = rsi
     rsi_df = pd.DataFrame(rsi_data)
     return rsi_df
