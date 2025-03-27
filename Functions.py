@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import yfinance as yf
 
@@ -40,8 +40,18 @@ def calculateEMA(ticker_symbol, period):
     ticker, hdata = fetchStock(ticker_symbol)
     return hdata['Close'].ewm(span=period, adjust=False).mean()
 
-def plotData(data, title, xlabel = "Date", ylabel = "Price USD"):
-    plt.plot(data, label='Close Price', color='blue')
+def calculateTrueRange(ticker_symbol, period):
+    ticker = yf.Ticker(ticker_symbol)
+    data = ticker.history(period)
+    high_low = data['High'] - data['Low']
+    high_close = np.abs(data['High'] - data['Close'].shift())
+    low_close = np.abs(data['Low'] - data['Close'].shift())
+    true_range = np.maximum.reduce([high_low, high_close, low_close])
+    return true_range
+
+
+def plotData(data, title = "Default title", xlabel = "Date", ylabel = "Price USD"):
+    plt.plot(data, color='blue')
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
