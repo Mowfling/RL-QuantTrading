@@ -17,7 +17,9 @@ __all__ = [
     'calculateStochasticOscillator',
     'plotData',
     'rsi_sectorrotation',
-    'getHistoricalData'
+    'getHistoricalData',
+    'calculate_rsi',
+    'PlotDataDualAxis'
 ]
 
 def fetchStock(ticker_symbol, showData = False, period = "1y"):
@@ -90,8 +92,8 @@ def calculateStochasticOscillator(data, k_period=14, d_period=3):
     percent_d = percent_k.rolling(window=d_period).mean()
     return percent_k, percent_d
 
-def calculate_rsi(series, period=14):
-    delta = series.diff()
+def calculate_rsi(data, period=14):
+    delta = data.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
     rs = gain / loss
@@ -125,4 +127,22 @@ def plotData(data, title="Default title", xlabel="Date", ylabel="Price USD"):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
+    plt.show()
+
+def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Default label", ax2_label = "Default label", ax1_color="blue", ax2_color="orange"):
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+
+    ax1.plot(dataset1, color=ax1_color, label=ax1_label)
+    ax1.set_ylabel(ax1_label, color=ax1_color)
+    ax1.tick_params(axis='y', labelcolor=ax1_color)
+
+    ax2 = ax1.twinx()
+    ax2.plot(dataset2, color=ax2_color, label=ax2_label)
+    ax2.set_ylabel(ax2_label, color=ax2_color)
+    ax2.tick_params(axis='y', labelcolor=ax2_color)
+
+    # Add title and grid
+    plt.title(title)
+    fig.tight_layout()
+    plt.grid(True)
     plt.show()
