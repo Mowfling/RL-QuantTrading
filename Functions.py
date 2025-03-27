@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import yfinance as yf
+from data import listofsp500, sectors
 
 __all__ = [
     'fetchStock',
@@ -14,7 +15,8 @@ __all__ = [
     'calculateAverageTrueRangeSMA',
     'calculateAverageTrueRangeEMA',
     'calculateStochasticOscillator',
-    'plotData'
+    'plotData',
+    'rsi_sectorrotation'
 ]
 
 def fetchStock(ticker_symbol, showData = False, period = "1y"):
@@ -87,9 +89,26 @@ def calculateStochasticOscillator(data, k_period=14, d_period=3):
     percent_d = percent_k.rolling(window=d_period).mean()
     return percent_k, percent_d
 
+def calculate_rsi(series, period=14):
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+def rsi_sectorrotation(period= "3mo"):
+    rsi_data = {}
+    for sector, ticker in sectors.items():
+        data = fetchData(ticker, period)
+        rsi = calculate_rsi(data["Close"])
+        rsi_data[sector] = rsi
+    rsi_df = pd.DataFrame(rsi_data)
+    return rsi_df
+
 
 def plotData(data, title = "Default title", xlabel = "Date", ylabel = "Price USD"):
-    plt.plot(data, color='blue')
+    plt.plot(data)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)

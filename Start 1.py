@@ -9,5 +9,5 @@ from Functions import *
 #print(calculate50DaySMA("AAPL"))
 #print(calculate200DaySMA("AAPL")) 
 #plotData(calculateEMA("AAPL", 9), "APPL 9 day EMA")
-#plotData(calculate50DaySMA("NVDA"))
+plotData(rsi_sectorrotation(), title="Sector rotation")
 #print(calculateStochasticOscillator(fetchData("AAPL")))
