@@ -3,6 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yfinance as yf
 
+__all__ = [
+    'fetchStock',
+    'fetchData',
+    'plotPrice',
+    'calculate50DaySMA',
+    'calculate200DaySMA',
+    'calculateEMA',
+    'calculateTrueRange',
+    'calculateAverageTrueRangeSMA',
+    'calculateAverageTrueRangeEMA',
+    'calculateStochasticOscillator',
+    'plotData'
+]
+
 def fetchStock(ticker_symbol, showData = False, period = "1y"):
     ticker = yf.Ticker(ticker_symbol)
     historical_data = ticker.history(period)
@@ -17,6 +31,11 @@ def fetchStock(ticker_symbol, showData = False, period = "1y"):
     #    print("\nStock Actions:")
     #    print(actions)
     return ticker, historical_data
+
+def fetchData(ticker_symbol, period = "1y"):
+    ticker = yf.Ticker(ticker_symbol)
+    historical_data = ticker.history(period)
+    return historical_data
 
 def plotPrice(ticker_symbol, period):
     ticker, historical_data = fetchStock(ticker_symbol, False, period)
@@ -58,6 +77,16 @@ def calculateAverageTrueRangeEMA(ticker_symbol, data_period = "1y", atr_period =
     true_range = calculateTrueRange(ticker_symbol, data_period)
     average_true_range = true_range.ewm(span=atr_period, adjust=False).mean()
     return average_true_range
+
+def calculateStochasticOscillator(data, k_period=14, d_period=3):
+    low_min = data['Low'].rolling(window=k_period).min()
+    high_max = data['High'].rolling(window=k_period).max()
+    #%K calculation
+    percent_k = ((data['Close'] - low_min) / (high_max - low_min)) * 100
+    # %D calculation (3-period SMA of %K)
+    percent_d = percent_k.rolling(window=d_period).mean()
+    return percent_k, percent_d
+
 
 def plotData(data, title = "Default title", xlabel = "Date", ylabel = "Price USD"):
     plt.plot(data, color='blue')
