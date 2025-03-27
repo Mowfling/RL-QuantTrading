@@ -34,49 +34,49 @@ def fetchStock(ticker_symbol, showData = False, period = "1y"):
     #    print(actions)
     return ticker, historical_data
 
+def getHistoricalData(ticker_symbol, period = "1y"):
+    ticker = yf.Ticker(ticker_symbol)
+    historical_data = ticker.history(period)
+    return historical_data
+
 def fetchData(ticker_symbol, period = "1y"):
     ticker = yf.Ticker(ticker_symbol)
     historical_data = ticker.history(period)
     return historical_data
 
 def plotPrice(ticker_symbol, period):
-    ticker, historical_data = fetchStock(ticker_symbol, False, period)
+    historical_data = getHistoricalData(ticker_symbol, period)
     plt.figure(figsize=(10, 6))  
     plt.plot(historical_data['Close'], label='Close Price')  
-    plt.title(f'Historical Closing Prices of {ticker}') 
+    plt.title(f'Historical Closing Prices of {ticker_symbol}') 
     plt.xlabel('Date')
     plt.ylabel('Close Price (USD)') 
     plt.legend()
     plt.show() 
 
-def calculate50DaySMA(ticker_symbol, sma_period = 50, data_period_days = "200d"):
-    ticker, hdata = fetchStock(ticker_symbol, False, data_period_days)
-    return hdata['Close'].rolling(window=sma_period).mean()
+def calculate50DaySMA(data, sma_period = 50, data_period_days = "200d"):
+    return data['Close'].rolling(window=sma_period).mean()
 
-def calculate200DaySMA(ticker_symbol, sma_period = 200, data_period_days = "1y"):
-    ticker, hdata = fetchStock(ticker_symbol, False, data_period_days)
-    return hdata['Close'].rolling(window=sma_period).mean()
+def calculate200DaySMA(data, sma_period = 200, data_period_days = "1y"):
+    return data['Close'].rolling(window=sma_period).mean()
 
-def calculateEMA(ticker_symbol, period):
-    ticker, hdata = fetchStock(ticker_symbol)
-    return hdata['Close'].ewm(span=period, adjust=False).mean()
+def calculateEMA(data, period):
+    return data['Close'].ewm(span=period, adjust=False).mean()
 
-def calculateTrueRange(ticker_symbol, period):
-    ticker = yf.Ticker(ticker_symbol)
-    data = ticker.history(period)
+def calculateTrueRange(data):
     high_low = data['High'] - data['Low']
     high_close = np.abs(data['High'] - data['Close'].shift())
     low_close = np.abs(data['Low'] - data['Close'].shift())
     true_range = np.maximum.reduce([high_low, high_close, low_close])
     return true_range
 
-def calculateAverageTrueRangeSMA(ticker_symbol, data_period = "1y", atr_period = 14):
-    true_range = calculateTrueRange(ticker_symbol, data_period)
+def calculateAverageTrueRangeSMA(data, atr_period = 14):
+    true_range = calculateTrueRange(data)
     average_true_range = true_range.rolling(window = atr_period).mean()
     return average_true_range
 
-def calculateAverageTrueRangeEMA(ticker_symbol, data_period = "1y", atr_period = 14):
-    true_range = calculateTrueRange(ticker_symbol, data_period)
+def calculateAverageTrueRangeEMA(data, atr_period = 14):
+    true_range = calculateTrueRange(data)
     average_true_range = true_range.ewm(span=atr_period, adjust=False).mean()
     return average_true_range
 
