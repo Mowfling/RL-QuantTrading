@@ -16,7 +16,8 @@ __all__ = [
     'calculateAverageTrueRangeEMA',
     'calculateStochasticOscillator',
     'plotData',
-    'rsi_sectorrotation'
+    'rsi_sectorrotation',
+    'getHistoricalData'
 ]
 
 def fetchStock(ticker_symbol, showData = False, period = "1y"):
@@ -106,11 +107,22 @@ def rsi_sectorrotation(sector_period= "3mo", rsi_period = 14):
     rsi_df = pd.DataFrame(rsi_data)
     return rsi_df
 
+def plotData(data, title="Default title", xlabel="Date", ylabel="Price USD"):
+    plt.figure(figsize=(10, 5))
 
-def plotData(data, title = "Default title", xlabel = "Date", ylabel = "Price USD"):
-    plt.plot(data)
+    # Check if it's a DataFrame or Series
+    if hasattr(data, "columns"):
+        # It's a DataFrame – plot each column
+        for column in data.columns:
+            plt.plot(data.index, data[column], label=column)
+    else:
+        # It's a Series – plot directly
+        plt.plot(data, label=data.name if data.name else "Series")
+
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
     plt.show()
