@@ -17,3 +17,4 @@ Advance-Decline Line, New Highs/Lows<br/>
 Fibonacci Retracement/Extension<br/>
 Seasonality charts<br/>
 Market Sentiment (FT, Globe and mail, Bloomberg, CNBC, Reuters, Yahoo finance) (this is ambitious lol)<br/> 
+this is a test
