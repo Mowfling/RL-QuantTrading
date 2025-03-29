@@ -6,7 +6,6 @@ from data import listofsp500, sectors
 
 __all__ = [
     'fetchStock',
-    'fetchData',
     'plotPrice',
     'calculate50DaySMA',
     'calculate200DaySMA',
@@ -98,7 +97,7 @@ def calculate_rsi(data, period=14):
 def rsi_sectorrotation(sector_period= "3mo", rsi_period = 14):
     rsi_data = {}
     for sector, ticker in sectors.items():
-        data = fetchData(ticker, sector_period)
+        data = getHistoricalData(ticker, sector_period)
         rsi = calculate_rsi(data["Close"], rsi_period)
         rsi_data[sector] = rsi
     rsi_df = pd.DataFrame(rsi_data)
