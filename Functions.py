@@ -42,11 +42,6 @@ def getHistoricalData(ticker_symbol, period = "1y"):
     historical_data = ticker.history(period)
     return historical_data
 
-def fetchData(ticker_symbol, period = "1y"):
-    ticker = yf.Ticker(ticker_symbol)
-    historical_data = ticker.history(period)
-    return historical_data
-
 def plotPrice(ticker_symbol, period):
     historical_data = getHistoricalData(ticker_symbol, period)
     plt.figure(figsize=(10, 6))  
@@ -57,10 +52,10 @@ def plotPrice(ticker_symbol, period):
     plt.legend()
     plt.show() 
 
-def calculate50DaySMA(data, sma_period = 50, data_period_days = "200d"):
+def calculate50DaySMA(data, sma_period = 50):
     return data['Close'].rolling(window=sma_period).mean()
 
-def calculate200DaySMA(data, sma_period = 200, data_period_days = "1y"):
+def calculate200DaySMA(data, sma_period = 200):
     return data['Close'].rolling(window=sma_period).mean()
 
 def calculateEMA(data, period):
