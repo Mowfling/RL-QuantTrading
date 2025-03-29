@@ -109,16 +109,13 @@ def rsi_sectorrotation(sector_period= "3mo", rsi_period = 14):
     rsi_df = pd.DataFrame(rsi_data)
     return rsi_df
 
-def plotData(data, title="Default title", xlabel="Date", ylabel="Price USD"):
+def plotData(data, title="Default title", xlabel="Date", ylabel="Price USD", show_graph=True):
     plt.figure(figsize=(10, 5))
 
-    # Check if it's a DataFrame or Series
     if hasattr(data, "columns"):
-        # It's a DataFrame – plot each column
         for column in data.columns:
             plt.plot(data.index, data[column], label=column)
     else:
-        # It's a Series – plot directly
         plt.plot(data, label=data.name if data.name else "Series")
 
     plt.title(title)
@@ -127,9 +124,12 @@ def plotData(data, title="Default title", xlabel="Date", ylabel="Price USD"):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
+    if (show_graph):
+        plt.show()
+    else:
+        return plt
 
-def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Default label", ax2_label = "Default label", ax1_color="blue", ax2_color="orange"):
+def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Default label", ax2_label = "Default label", ax1_color="blue", ax2_color="orange", show_graph=True):
     fig, ax1 = plt.subplots(figsize=(10, 5))
 
     ax1.plot(dataset1, color=ax1_color, label=ax1_label)
@@ -145,4 +145,7 @@ def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Def
     plt.title(title)
     fig.tight_layout()
     plt.grid(True)
-    plt.show()
+    if (show_graph):
+        plt.show()
+    else:
+        return plt
