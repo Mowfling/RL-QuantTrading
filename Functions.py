@@ -36,10 +36,15 @@ def fetchStock(ticker_symbol, showData = False, period = "1y"):
     #    print(actions)
     return ticker, historical_data
 
-def getHistoricalData(ticker_symbol, period = "1y"):
+def getHistoricalData(ticker_symbol, period = "1y", interval_d = "1d"):
     ticker = yf.Ticker(ticker_symbol)
     historical_data = ticker.history(period)
     return historical_data
+
+#Minute data only works for 7 last days
+def getMinuteData(ticker_symbol, period = "1d"):
+    data = yf.download(ticker_symbol, period, interval="1m")
+    return data
 
 def plotPrice(ticker_symbol, period):
     historical_data = getHistoricalData(ticker_symbol, period)
@@ -143,3 +148,19 @@ def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Def
         plt.show()
     else:
         return plt
+
+def calculate_obv(data):
+    obv = [0] 
+    for i in range(1, len(data)):
+        if data['Close'].iloc[i] > data['Close'].iloc[i - 1]:
+            obv.append(obv[-1] + data['Volume'].iloc[i])
+        elif data['Close'].iloc[i] < data['Close'].iloc[i - 1]:
+            obv.append(obv[-1] - data['Volume'].iloc[i])
+        else:
+            obv.append(obv[-1])
+    return pd.Series(obv, index=data.index)
+
+def calculate_intraday_vwap(data):
+    typical_price = (data['High'] + data['Low'] + data['Close']) / 3
+    vwap = (typical_price * data['Volume']).cumsum() / data['Volume'].cumsum()
+    return vwap
