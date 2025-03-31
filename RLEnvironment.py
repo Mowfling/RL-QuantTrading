@@ -2,53 +2,76 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 import pandas as pd
+from data import RED, GREEN
 
 class TradingEnv(gym.Env):
-    def __init__(self, df):
-        self.df = df
+    def __init__(self, df, feature_cols, verbose=False):
+        super().__init__()
+        self.df = df.reset_index(drop=True)
+        self.feature_cols = feature_cols
         self.current_step = 0
-        self.initial_cash = 10000
-        self.cash = self.initial_cash
-        self.shares_held = 0
+        self.balance = 1000.0
+        self.position = 0
+        self.entry_price = 0.0
+        self.verbose = verbose
 
-        # Define observation space (e.g. 5 indicators)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(df.shape[1],), dtype=np.float32)
+        # Observation space matches the number of features
+        self.observation_space = spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=(len(self.feature_cols),),
+            dtype=np.float32
+        )
+        self.action_space = spaces.Discrete(3)  # Hold, Buy, Sell
 
-        # Define action space: Discrete (0 = hold, 1 = buy, 2 = sell)
-        self.action_space = spaces.Discrete(3)
+    def _get_obs(self):
+        return self.df.loc[self.current_step, self.feature_cols].values.astype(np.float32)
 
     def reset(self, seed=None, options=None):
         self.current_step = 0
-        self.cash = self.initial_cash
-        self.shares_held = 0
+        self.balance = 1000.0
+        self.position = 0
+        self.entry_price = 0.0
         return self._get_obs(), {}
 
+
     def step(self, action):
-        price = self.df["Close"].iloc[self.current_step]
-        actions = {
-            1: lambda: self.buy(price),
-            2: lambda: self.sell(price)
-        }
-        actions.get(action, lambda: None)()  # Do nothing if action not in dict
+        current_price = self.df.loc[self.current_step, "Close"]
+        prev_portfolio_value = self.balance + self.position * current_price
+        reward = 0.0
+        action_name = ["Hold", "Buy", "Sell"][action]
 
-        # Reward = portfolio change (optional: Sharpe, drawdown, etc.)
-        portfolio_value = self.cash + self.shares_held * price
-        reward = portfolio_value  # or delta from last step
+        #Execute action
+        if action == 1 and self.position == 0:  # Buy
+            self.position = 1
+            self.entry_price = current_price
+            self.balance -= current_price  # spend cash to buy
+        elif action == 2 and self.position == 1:  # Sell
+            self.position = 0
+            self.balance += current_price  # gain cash from sell
 
+        #Advance time
         self.current_step += 1
         done = self.current_step >= len(self.df) - 1
-        return self._get_obs(), reward, done, False, {}
+        next_price = self.df.loc[self.current_step, "Close"]
+        new_portfolio_value = self.balance + self.position * next_price
 
-    def _get_obs(self):
-        return self.df.iloc[self.current_step].values.astype(np.float32)
+        #Reward
+        reward = new_portfolio_value - prev_portfolio_value
+        reward /= prev_portfolio_value
+
+        if self.verbose and self.current_step % 10 == 0:
+            print(f"Step: {self.current_step}")
+            print(f"  Action: {action_name}")
+            print(f"  Price: {current_price:.2f} → {next_price:.2f}")
+            print(f"  Position: {self.position}")
+            print(f"  Balance: {self.balance:.2f}")
+            print(f"  Portfolio Value: {prev_portfolio_value:.2f} → {new_portfolio_value:.2f}")
+            print(f"  Reward: {reward:.4f}")
+            print("─" * 40)
 
 
-def buy(self, price):
-    if self.cash > 0:
-        self.shares_held = self.cash / price
-        self.cash = 0
-
-def sell(self, price):
-    if self.shares_held > 0:
-        self.cash = self.shares_held * price
-        self.shares_held = 0
+        next_state = self._get_obs()
+        terminated = done
+        truncated = False  # or True if you want to simulate a time limit
+        return next_state, reward, terminated, truncated, {}
