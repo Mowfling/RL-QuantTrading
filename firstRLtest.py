@@ -25,17 +25,11 @@ class TradingEnv(gym.Env):
 
     def step(self, action):
         price = self.df["Close"].iloc[self.current_step]
-        reward = 0
-
-        # Execute action
-        if action == 1:  # Buy
-            if self.cash > 0:
-                self.shares_held = self.cash / price
-                self.cash = 0
-        elif action == 2:  # Sell
-            if self.shares_held > 0:
-                self.cash = self.shares_held * price
-                self.shares_held = 0
+        actions = {
+            1: lambda: self.buy(price),
+            2: lambda: self.sell(price)
+        }
+        actions.get(action, lambda: None)()  # Do nothing if action not in dict
 
         # Reward = portfolio change (optional: Sharpe, drawdown, etc.)
         portfolio_value = self.cash + self.shares_held * price
@@ -47,3 +41,14 @@ class TradingEnv(gym.Env):
 
     def _get_obs(self):
         return self.df.iloc[self.current_step].values.astype(np.float32)
+
+
+def buy(self, price):
+    if self.cash > 0:
+        self.shares_held = self.cash / price
+        self.cash = 0
+
+def sell(self, price):
+    if self.shares_held > 0:
+        self.cash = self.shares_held * price
+        self.shares_held = 0
