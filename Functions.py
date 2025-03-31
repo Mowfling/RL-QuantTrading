@@ -184,5 +184,5 @@ def modelInput(data):
     df['RSI'] = calculate_rsi(data['Close'], period=14)
     df['Stochastic_Oscillator%K'], df['Stochastic_Oscillator%D'] = calculateStochasticOscillator(data, k_period=14, d_period=3)
     df['OBV'] = calculate_obv(data)
-    df = df.dropna(inplace=True)
+    df.dropna(inplace=True)  # modify in place, but don't assign it
     return df
