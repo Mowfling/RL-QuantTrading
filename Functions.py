@@ -147,19 +147,22 @@ def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Def
         return plt
 
 def calculate_obv(data):
-    obv = [0]  # Starting OBV value
+    # Handle multi-ticker data: reduce to single ticker if necessary
+    if isinstance(data.columns, pd.MultiIndex):
+        raise ValueError("Please provide data for a single ticker (e.g., data.xs('AAPL', axis=1, level=1))")
 
+    obv = [0]
     for i in range(1, len(data)):
         prev_close = data['Close'].iloc[i - 1]
         curr_close = data['Close'].iloc[i]
-        curr_volume = data['Volume'].iloc[i]
+        volume = data['Volume'].iloc[i]
 
         if curr_close > prev_close:
-            obv.append(obv[-1] + curr_volume)
+            obv.append(obv[-1] + volume)
         elif curr_close < prev_close:
-            obv.append(obv[-1] - curr_volume)
+            obv.append(obv[-1] - volume)
         else:
-            obv.append(obv[-1])  # No change in OBV
+            obv.append(obv[-1])
 
     return pd.Series(obv, index=data.index)
 
