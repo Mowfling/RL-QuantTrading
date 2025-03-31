@@ -7,8 +7,7 @@ from data import listofsp500, sectors
 __all__ = [
     'fetchStock',
     'plotPrice',
-    'calculate50DaySMA',
-    'calculate200DaySMA',
+    'calculateSMA',
     'calculateEMA',
     'calculateTrueRange',
     'calculateAverageTrueRangeSMA',
@@ -18,7 +17,8 @@ __all__ = [
     'rsi_sectorrotation',
     'getHistoricalData',
     'calculate_rsi',
-    'PlotDataDualAxis'
+    'PlotDataDualAxis',
+    'modelInput'
 ]
 
 def fetchStock(ticker_symbol, showData = False, period = "1y"):
@@ -56,21 +56,18 @@ def plotPrice(ticker_symbol, period):
     plt.legend()
     plt.show() 
 
-def calculate50DaySMA(data, sma_period = 50):
+def calculateSMA(data, sma_period = 50):
     return data['Close'].rolling(window=sma_period).mean()
 
-def calculate200DaySMA(data, sma_period = 200):
-    return data['Close'].rolling(window=sma_period).mean()
-
-def calculateEMA(data, period):
+def calculateEMA(data, period = 50):
     return data['Close'].ewm(span=period, adjust=False).mean()
 
 def calculateTrueRange(data):
     high_low = data['High'] - data['Low']
-    high_close = np.abs(data['High'] - data['Close'].shift())
-    low_close = np.abs(data['Low'] - data['Close'].shift())
-    true_range = np.maximum.reduce([high_low, high_close, low_close])
-    return true_range
+    high_close = (data['High'] - data['Close'].shift()).abs()
+    low_close = (data['Low'] - data['Close'].shift()).abs()
+    true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    return true_range  # returns a Series
 
 def calculateAverageTrueRangeSMA(data, atr_period = 14):
     true_range = calculateTrueRange(data)
@@ -150,17 +147,39 @@ def PlotDataDualAxis(dataset1, dataset2, title="Default title", ax1_label = "Def
         return plt
 
 def calculate_obv(data):
-    obv = [0] 
+    obv = [0]  # Starting OBV value
+
     for i in range(1, len(data)):
-        if data['Close'].iloc[i] > data['Close'].iloc[i - 1]:
-            obv.append(obv[-1] + data['Volume'].iloc[i])
-        elif data['Close'].iloc[i] < data['Close'].iloc[i - 1]:
-            obv.append(obv[-1] - data['Volume'].iloc[i])
+        prev_close = data['Close'].iloc[i - 1]
+        curr_close = data['Close'].iloc[i]
+        curr_volume = data['Volume'].iloc[i]
+
+        if curr_close > prev_close:
+            obv.append(obv[-1] + curr_volume)
+        elif curr_close < prev_close:
+            obv.append(obv[-1] - curr_volume)
         else:
-            obv.append(obv[-1])
+            obv.append(obv[-1])  # No change in OBV
+
     return pd.Series(obv, index=data.index)
 
 def calculate_intraday_vwap(data):
     typical_price = (data['High'] + data['Low'] + data['Close']) / 3
     vwap = (typical_price * data['Volume']).cumsum() / data['Volume'].cumsum()
     return vwap
+
+def modelInput(data):
+    df = pd.DataFrame()
+    df['Close'] = data['Close']
+    df['SMA_10'] = calculateSMA(data, sma_period=10)
+    df['SMA_30'] = calculateSMA(data, sma_period=30)
+    df['SMA_50'] = calculateSMA(data, sma_period=50)
+    df['EMA_30'] = calculateEMA(data, period=30)
+    df['True_Range'] = calculateTrueRange(data)
+    df['ATR_SMA'] = calculateAverageTrueRangeSMA(data, atr_period=14)
+    df['ATR_EMA'] = calculateAverageTrueRangeEMA(data, atr_period=14)
+    df['RSI'] = calculate_rsi(data['Close'], period=14)
+    df['Stochastic_Oscillator%K'], df['Stochastic_Oscillator%D'] = calculateStochasticOscillator(data, k_period=14, d_period=3)
+    df['OBV'] = calculate_obv(data)
+    df = df.dropna(inplace=True)
+    return df
