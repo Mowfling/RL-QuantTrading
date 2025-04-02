@@ -36,9 +36,12 @@ def fetchStock(ticker_symbol, showData = False, period = "1y"):
     #    print(actions)
     return ticker, historical_data
 
-def getHistoricalData(ticker_symbol, period = "1y", interval_d = "1d"):
+def getHistoricalData(ticker_symbol, period = "1y", interval_d = "1d", start="", end=""):
     ticker = yf.Ticker(ticker_symbol)
-    historical_data = ticker.history(period)
+    if (interval_d != ""):
+        historical_data = yf.download(ticker_symbol, start=start, end=end)
+    else:
+        historical_data = ticker.history(period)
     return historical_data
 
 #Minute data only works for 7 last days

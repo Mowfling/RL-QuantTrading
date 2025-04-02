@@ -36,3 +36,9 @@ RED = "\033[91m"
 GREEN = "\033[92m"
 YELLOW = "\033[93m"
 CYAN = "\033[96m"
+
+features = [
+    "Close", "SMA_10", "SMA_30", "SMA_50", "EMA_30",
+    "True_Range", "ATR_SMA", "ATR_EMA",
+    "RSI", "Stochastic_Oscillator%K", "Stochastic_Oscillator%D", "OBV"
+]
