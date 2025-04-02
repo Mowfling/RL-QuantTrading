@@ -28,19 +28,24 @@ class TradingEnv(gym.Env):
         return self.df.loc[self.current_step, self.feature_cols].values.astype(np.float32)
 
     def reset(self, seed=None, options=None):
-        self.current_step = 0
-        self.balance = 1000.0
-        self.shares_held = 0
-        self.entry_price = 0.0
-        return self._get_obs(), {}
+        super().reset(seed=seed)
+        
+        self.max_episode_length = 200
+        self.current_step = np.random.randint(0, len(self.df) - self.max_episode_length)
 
+        self.balance = 1000.0
+        self.shares_held = 0.0
+        self.entry_price = 0.0
+
+        self.episode_start = self.current_step  # Store this to know when to stop
+        return self._get_obs(), {}
 
     def step(self, action):
         current_price = self.df.loc[self.current_step, "Close"]
         prev_portfolio_value = self.balance + self.shares_held * current_price
         reward = 0.0
         action = float(action)
-        
+
         if action > 0:
             # Buy shares using (action * balance)
             buy_amount = self.balance * min(action, 1.0)
