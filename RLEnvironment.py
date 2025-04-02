@@ -11,7 +11,7 @@ class TradingEnv(gym.Env):
         self.feature_cols = feature_cols
         self.current_step = 0
         self.balance = 1000.0
-        self.position = 0
+        self.shares_held = 0
         self.entry_price = 0.0
         self.verbose = verbose
 
@@ -22,7 +22,7 @@ class TradingEnv(gym.Env):
             shape=(len(self.feature_cols),),
             dtype=np.float32
         )
-        self.action_space = spaces.Discrete(3)  # Hold, Buy, Sell
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 
     def _get_obs(self):
         return self.df.loc[self.current_step, self.feature_cols].values.astype(np.float32)
@@ -30,31 +30,35 @@ class TradingEnv(gym.Env):
     def reset(self, seed=None, options=None):
         self.current_step = 0
         self.balance = 1000.0
-        self.position = 0
+        self.shares_held = 0
         self.entry_price = 0.0
         return self._get_obs(), {}
 
 
     def step(self, action):
         current_price = self.df.loc[self.current_step, "Close"]
-        prev_portfolio_value = self.balance + self.position * current_price
+        prev_portfolio_value = self.balance + self.shares_held * current_price
         reward = 0.0
-        action_name = ["Hold", "Buy", "Sell"][action]
+        action = float(action)
+        
+        if action > 0:
+            # Buy shares using (action * balance)
+            buy_amount = self.balance * min(action, 1.0)
+            shares_to_buy = buy_amount / current_price
+            self.balance -= shares_to_buy * current_price
+            self.shares_held += shares_to_buy
 
-        #Execute action
-        if action == 1 and self.position == 0:  # Buy
-            self.position = 1
-            self.entry_price = current_price
-            self.balance -= current_price  # spend cash to buy
-        elif action == 2 and self.position == 1:  # Sell
-            self.position = 0
-            self.balance += current_price  # gain cash from sell
+        elif action < 0:
+            # Sell a fraction of holdings
+            sell_amount = self.shares_held * min(abs(action), 1.0)
+            self.balance += sell_amount * current_price
+            self.shares_held -= sell_amount
 
         #Advance time
         self.current_step += 1
         done = self.current_step >= len(self.df) - 1
         next_price = self.df.loc[self.current_step, "Close"]
-        new_portfolio_value = self.balance + self.position * next_price
+        new_portfolio_value = self.balance + self.shares_held * next_price
 
         #Reward
         reward = new_portfolio_value - prev_portfolio_value
@@ -62,9 +66,9 @@ class TradingEnv(gym.Env):
 
         if self.verbose and self.current_step % 10 == 0:
             print(f"Step: {self.current_step}")
-            print(f"  Action: {action_name}")
+            print(f"  Action: {action}")
             print(f"  Price: {current_price:.2f} → {next_price:.2f}")
-            print(f"  Position: {self.position}")
+            print(f"  Position: {self.shares_held}")
             print(f"  Balance: {self.balance:.2f}")
             print(f"  Portfolio Value: {prev_portfolio_value:.2f} → {new_portfolio_value:.2f}")
             print(f"  Reward: {reward:.4f}")
